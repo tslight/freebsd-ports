@@ -15,10 +15,12 @@ LICENSE_FILE=	${WRKSRC}/COPYING
 
 LIB_DEPENDS=	libgmp.so:math/gmp
 
-FLAVORS=		full nox
-full_CONFLICTS_INSTALL=	emacs-devel-nox
+FLAVORS=		full lucid nox
+full_CONFLICTS_INSTALL=	emacs-devel-lucid emacs-devel-nox
 nox_PKGNAMESUFFIX=	-devel-nox
 nox_CONFLICTS_INSTALL=	emacs-devel
+lucid_PKGNAMESUFFIX=	-devel-lucid
+lucid_CONFLICTS_INSTALL=	emacs-devel emacs-devel-nox
 
 USES=		autoreconf:build cpe gmake localbase:ldflags makeinfo ncurses \
 		pkgconfig
@@ -56,13 +58,21 @@ CONFIGURE_ARGS+=	--with-sound=no \
 			--without-xim \
 			--without-xpm \
 			--without-xwidgets
+.elif ${FLAVOR:U} == lucid
+CONFIGURE_ARGS+=	--with-x-toolkit=lucid \
+			--without-dbus \
+			--without-gconf \
+			--without-gsettings \
+			--without-gtk2 \
+			--without-gtk3 \
+			--without-pgtk
 .else
 CONFIGURE_ARGS+=	--with-x
 .endif
 # See r468320 to determine if/when the next line can be removed
 CONFIGURE_ENV=		ac_cv_header_sys_sysinfo_h=no
 
-CONFLICTS_INSTALL=	emacs emacs-canna emacs-nox
+CONFLICTS_INSTALL=	emacs emacs-canna emacs-nox emacs-lucid
 
 SUB_FILES=	pkg-message sources.el
 SUB_LIST=	EMACS_VER=${DISTVERSION:R} \
@@ -103,6 +113,9 @@ OPTIONS_EXCLUDE=		ALSA CAIRO DBUS GFILE GIF GSETTINGS GTK2 GTK3 \
 				HARFBUZZ JPEG LCMS2 M17N MAGICK MOTIF OSS OTF \
 				PGTK PNG SCROLLBARS SVG TIFF WEBP XAW XAW3D XFT \
 				XIM XPM XWIDGETS
+.endif
+.if ${FLAVOR:U} == lucid
+OPTIONS_EXCLUDE=		DBUS GFILE GSETTINGS GTK2 GTK3 PGTK
 .endif
 OPTIONS_EXCLUDE_armv7=		NATIVECOMP
 OPTIONS_SUB=			YES
@@ -236,7 +249,7 @@ NATIVECOMP_COMMENT_END=		'*/'
 NATIVECOMP_COMMENT_START=	'/*'
 .endif
 
-.if ${FLAVOR:U} != nox
+.if ${FLAVOR:U} != nox || lucid
 USES+=		desktop-file-utils gnome
 .if !${PORT_OPTIONS:MPGTK}
 USES+=		xorg
